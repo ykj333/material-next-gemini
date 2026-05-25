@@ -8,8 +8,13 @@ export async function GET() {
 
   try {
     if (fs.existsSync(keyPath)) {
-      const key = fs.readFileSync(keyPath, 'utf-8').trim();
+      let key = fs.readFileSync(keyPath, 'utf-8').trim();
       if (key) {
+        // Auto-strip prefixes like "gemini api_KEY=" or "API_KEY="
+        if (key.includes('=')) {
+          key = key.split('=').pop().trim();
+        }
+
         const obfuscated = key.length > 8 
           ? key.substring(0, 4) + '...' + key.substring(key.length - 4)
           : 'Valid Key';
@@ -23,9 +28,13 @@ export async function GET() {
       }
     }
     
-    // Fallback: Check local environment variables (useful for cloud/Netlify deployment!)
+    // Fallback: Check local environment variables
     if (process.env.GEMINI_API_KEY) {
-      const envKey = process.env.GEMINI_API_KEY.trim();
+      let envKey = process.env.GEMINI_API_KEY.trim();
+      if (envKey.includes('=')) {
+        envKey = envKey.split('=').pop().trim();
+      }
+
       const obfuscated = envKey.length > 8
         ? envKey.substring(0, 4) + '...' + envKey.substring(envKey.length - 4)
         : 'Valid Key';

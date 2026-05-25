@@ -5,7 +5,15 @@ export async function POST(request) {
     const { type, topic, age, style, additional, key } = await request.json();
 
     // Use user-provided API key from settings or fallback to the system environment variable
-    const apiKey = key || process.env.GEMINI_API_KEY;
+    let apiKey = key || process.env.GEMINI_API_KEY;
+
+    if (apiKey) {
+      apiKey = apiKey.trim();
+      // Auto-strip prefixes like "gemini api_KEY=" or "API_KEY="
+      if (apiKey.includes('=')) {
+        apiKey = apiKey.split('=').pop().trim();
+      }
+    }
 
     if (!apiKey) {
       return NextResponse.json({
