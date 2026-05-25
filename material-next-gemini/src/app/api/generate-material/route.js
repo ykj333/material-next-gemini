@@ -49,10 +49,7 @@ Do not wrap the response in markdown code blocks like \`\`\`json. Return a raw, 
             parts: [{
               text: systemPrompt
             }]
-          }],
-          generationConfig: {
-            responseMimeType: 'application/json'
-          }
+          }]
         })
       }
     );
@@ -75,8 +72,14 @@ Do not wrap the response in markdown code blocks like \`\`\`json. Return a raw, 
       }, { status: 500 });
     }
 
+    // 마크다운 코드 블록 (```json ... ```) 또는 공백이 섞여 돌아왔을 때 완벽하게 JSON만 발라내는 지능형 클렌징 가드
+    let cleanText = rawText.trim();
+    if (cleanText.startsWith('```')) {
+      cleanText = cleanText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    }
+
     try {
-      const parsedData = JSON.parse(rawText.trim());
+      const parsedData = JSON.parse(cleanText);
       return NextResponse.json({
         success: true,
         data: parsedData
